@@ -155,6 +155,10 @@
             transition: .3s;
         }
 
+        input[type="radio"]:not(:checked):not(:disabled):hover {
+            border-color: var(--c);
+        }
+
         input[type=radio]:checked { /* https://freefrontend.com/css-radio-buttons/ */
             border-color:    var(--c);
             background-size: 100% 100%;
@@ -204,6 +208,7 @@
         }
 
         label:has(input[type="radio"]:disabled) {
+            color:  #bbb;
             cursor: not-allowed;
         }
     </style>

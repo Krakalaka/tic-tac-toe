@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        * {
+            margin:  0;
+            padding: 0;
+
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+
+            display:         flex;
+            justify-content: center;
+            align-items:     center;
+            background-image: linear-gradient( to top, #777, #DDD);
+        }
+
+        #main {
+            width:  fit-content;
+            height: fit-content;
+
+            padding:       20px;
+            border-radius: 20px;
+
+            background-color: #ddd;
+            box-shadow:       rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+        }
+
+        #line {
+            position: absolute;
+            z-index:  1;
+
+            border-radius:    1000px; /* It is 1000px because I have to put a big value and I can't put a percentage */
+            background-color: crimson;
+
+            transition: all 0.5s ease;
+        }
+
+        #boardClassic {
+            width:  300px;
+            height: 300px;
+        }
+
+        #boardFive {
+            width:  500px;
+            height: 500px;
+        }
+
+        #boardClassic, #boardFive {
+            border:        5px solid #aaa;
+            border-radius: 4px;
+            box-shadow:    rgba(0, 0, 0, 0.24) 0px 3px 8px;
+
+            display:   flex;
+            flex-wrap: wrap;
+
+            position: relative;
+        }
+
+        .clickable {
+            width:  100px;
+            height: 100px;
+
+            display:         flex;
+            justify-content: center;
+            align-items:     center;
+
+            font-size:   40px;
+            font-weight: bold;
+
+            cursor:     pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .oddCell {
+            background-color: #ddd;
+        }
+
+        .evenCell {
+            background-color: #ccc;
+        }
+
+        #menu {
+            width:       300px;
+            height:      fit-content;
+            margin-left: 20px;
+            padding:     30px;
+
+            text-align:    center;
+            align-content: center;
+        }
+
+        p {
+            text-shadow: 2px 2px 3px rgba(50, 50, 93, 0.3);
+        }
+
+        #note {
+            margin-top: 60px;
+        }
+
+        button {
+            width:      100%;
+            padding:    10px;
+            margin-top: 40px;
+
+            font-size:   20px;
+            font-weight: bold;
+            color:       white;
+
+            background-color: gray;
+            border:           none;
+            border-radius:    10px;
+            box-shadow:       rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+
+            cursor: pointer;
+
+            transition: 150ms;
+        }
+
+        button:hover {
+            background-color: rgb(100, 100, 100);
+        }
+
+        h2 {
+            font-size: 50px;
+        }
+
+        input[type=radio] { /* https://freefrontend.com/css-radio-buttons/ */
+
+            --s: 1em;       /* control the size */
+            --c: #009688; /* the active color */
+            
+            height:       var(--s);
+            aspect-ratio: 1;
+
+            border:         calc(var(--s)/9) solid #939393;
+            padding:        calc(var(--s)/9);
+            background:     radial-gradient(farthest-side, var(--c) 100%, #0000) 50%/0 0 no-repeat content-box;
+            border-radius:  50%;
+            outline-offset: calc(var(--s)/10);
+
+            -webkit-appearance: none;
+            -moz-appearance:    none;
+            appearance:         none;
+
+            cursor:     pointer;
+            font-size:  inherit;
+            transition: .3s;
+        }
+
+        input[type=radio]:checked { /* https://freefrontend.com/css-radio-buttons/ */
+            border-color:    var(--c);
+            background-size: 100% 100%;
+        }
+
+        input[type=radio]:disabled { /* https://freefrontend.com/css-radio-buttons/ */
+            background: linear-gradient(#939393 0 0) 50%/100% 20% no-repeat content-box;
+            opacity:    .5;
+            cursor:     not-allowed;
+        }
+
+        /*  OLD RADIO
+        input[type="radio"] {
+            width:  25px;
+            height: 25px;
+
+            cursor: pointer;
+        }
+
+        input[type="radio"]:disabled {
+            background: linear-gradient(#939393 0 0) 50%/100% 20% no-repeat content-box;
+            cursor:     not-allowed;
+        } 
+        */
+
+        label { /* https://freefrontend.com/css-radio-buttons/ */
+            display:     inline-flex;
+            align-items: center;
+            
+            gap:       10px;
+            margin:    5px 0;
+            font-size: 30px;
+            
+            cursor: pointer;
+
+            transition: .2s;
+            
+            /*  OLD LABEL
+            font-size: 30px
+            margin:    20px 0 0 10px;
+            display:   block; 
+            */
+        }
+
+        label:has(input[type="radio"]:not(:disabled)):hover {
+            color: #009688;
+        }
+
+        label:has(input[type="radio"]:disabled) {
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="main"></div>
+    <div id="menu"></div>
+
+    <script>
+
+        // Variables
+
+        let currentPlay = "";
+        let gameOver    = false;
+
+
+        // Functions to play (both modes)
+
+        function changeCurrentPlay() {
+            currentPlay = ((currentPlay === "X") ? "O" : "X");
+        }
+
+        function reset() {
+            let cells = document.getElementsByClassName('clickable');
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].innerText = "";
+            }
+
+            changeCurrentPlay();
+            gameOver = false;
+            document.getElementById('resetBtn').innerText = "Reset";
+            document.getElementById('legend').innerText   = `${currentPlay}'s turn`;
+            document.getElementById('line').style.width   = '0';
+        }
+
+        function drawLine(winningLine, mode) {
+            const line     = document.getElementById('line');
+            const cellSize = 100;
+            const cells    = document.getElementsByClassName('clickable');
+
+            const start  = cells[winningLine[0]].getBoundingClientRect();
+            const startX = start.left;
+            const startY = start.top;
+
+            const end   = cells[winningLine[winningLine.length - 1]].getBoundingClientRect();
+            const endX  = end.left;
+            const endY  = end.top;
+
+            const length = Math.sqrt((Math.pow((endX - startX), 2) + Math.pow((endY - startY), 2)));
+            const angle  = Math.atan2((endY - startY), (endX - startX));
+
+            line.style.width           = `${(length + 10)}px`;
+            line.style.height          = "5px";
+            line.style.left            = `${(startX + cellSize / 2)}px`;
+            line.style.top             = `${(startY + cellSize / 2)}px`;
+            line.style.transform       = `rotate(${angle}rad)`;
+            line.style.transformOrigin = '0 0';
+        }
+
+        function checkWinner(mode) {
+            let   winner      = false;
+            let   winningLine = null;
+            const cells       = document.getElementsByClassName('clickable');
+            let   lines       = (mode === "Classic") ? [
+                /* 3*3 board (classic)
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8]
+                */
+
+                // horizontal lines
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+
+                // vertical lines
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+
+                // diagonal lines
+                [0, 4, 8],
+                [2, 4, 6]
+            ] : [
+                /* 5*5 board
+                [ 0,  1,  2,  3,  4],
+                [ 5,  6,  7,  8,  9],
+                [10, 11, 12, 13, 14],
+                [15, 16, 17, 18, 19],
+                [20, 21, 22, 23, 24]
+                */
+
+                // horizontal lines
+                [ 0,  1,  2,  3], [ 1,  2,  3,  4],
+                [ 5,  6,  7,  8], [ 6,  7,  8,  9],
+                [10, 11, 12, 13], [11, 12, 13, 14],
+                [15, 16, 17, 18], [16, 17, 18, 19],
+                [20, 21, 22, 23], [21, 22, 23, 24],
+
+                // vertical lines
+                [ 0,  5, 10, 15], [ 5, 10, 15, 20],
+                [ 1,  6, 11, 16], [ 6, 11, 16, 21],
+                [ 2,  7, 12, 17], [ 7, 12, 17, 22],
+                [ 3,  8, 13, 18], [ 8, 13, 18, 23],
+                [ 4,  9, 14, 19], [ 9, 14, 19, 24],
+
+                // diagonal lines
+                [ 0,  6, 12, 18], [ 4,  8, 12, 16],
+                [ 1,  7, 13, 19], [ 3,  7, 11, 15],
+                [ 5, 11, 17, 23], [ 9, 13, 17, 21],
+                [ 6, 12, 18, 24], [ 8, 12, 16, 20]
+            ];
+
+            if (mode === "Classic") {
+                for (let i = 0; i < lines.length; i++) {
+                    let [a, b, c] = lines[i];
+                    if (
+                        (cells[a].innerText === cells[b].innerText) && 
+                        (cells[b].innerText === cells[c].innerText) && 
+                        (cells[a].innerText !== "")
+                    ) {
+                        winner      = true;
+                        winningLine = lines[i];
+                        break;
+                    }
+                }
+            } else {
+                for (let i = 0; i < lines.length; i++) {
+                    let [a, b, c, d] = lines[i];
+                    if (
+                        (cells[a].innerText === cells[b].innerText) && 
+                        (cells[b].innerText === cells[c].innerText) && 
+                        (cells[c].innerText === cells[d].innerText) && 
+                        (cells[a].innerText !== "")
+                    ) {
+                        winner      = true;
+                        winningLine = lines[i];
+                        break;
+                    }
+                }
+            }
+
+            if (winner) {
+                drawLine(winningLine, mode);
+            }
+
+            return winner;
+        }
+
+        function checkDraw() {
+            const cells = document.getElementsByClassName("clickable");
+            let   draw  = true;
+            for (let i = 0; i < cells.length; i++) {
+                if (cells[i].innerText === "") {
+                    draw = false;
+                }
+            }
+
+            return draw;
+        }
+
+        function play(numCell, mode) {
+            let thisCell = document.getElementById(`cell${numCell}`);
+
+            if ((!gameOver) && (thisCell.innerHTML === "")) {
+                thisCell.innerText = currentPlay;
+    
+                let legend   = document.getElementById('legend');
+                let resetBtn = document.getElementById('resetBtn');
+    
+                if (checkWinner(mode)) {
+                    legend.innerText   = `Player ${currentPlay} won!`;
+                    resetBtn.innerText = "Play again";
+                    gameOver           = true;
+                } else if (checkDraw()) {
+                    legend.innerText   = "Draw!";
+                    resetBtn.innerText = "Play again";
+                    gameOver           = true;
+                } else {
+                    changeCurrentPlay();
+                    legend.innerText = `${currentPlay}'s turn`;
+                }
+            }
+        }
+
+
+        // Return to menu
+
+        function generateGame(boardType, quantity) {
+            document.getElementById('main').innerHTML = `
+                <div id="line"></div>
+                <div id="board${boardType}"></div>
+            `;
+
+            for (let i = 0; i < quantity; i++) {
+                document.getElementById(`board${boardType}`).innerHTML += `<div id="cell${i}" class="clickable ${(((i % 2) == 0) ? `evenCell` : `oddCell`)}" onclick="play(${i}, '${boardType}')"></div>`;
+            }
+
+            document.getElementById('menu').innerHTML = `
+                <p id="legend"></p>
+                <button id="resetBtn" onclick="reset()"></button>
+                <button id="return" onclick="returnToMainMenu()">Return</button>
+            ` + ((boardType == "Five") ? '<p id="note">NOTE: You have to connect 4 symbols horizontally, vertically or diagonally.</p>' : '');
+
+            currentPlay = "";
+            reset();
+        }
+
+        function returnToMainMenu() {
+            document.getElementById('main').innerHTML = `
+                <h2>Play against</h2>
+                <label for="human"><input id="human" type="radio" name="playAgainst" checked="checked"> Human</label><br>
+                <label for="ai"><input id="ai" type="radio" name="playAgainst" disabled> AI</label>
+            `;
+            document.getElementById('menu').innerHTML = `
+                <button id="classicModeBtn">Classic mode</button>
+                <button id="fiveModeBtn">5 × 5 mode</button>
+            `;
+
+            document.getElementById('classicModeBtn').addEventListener('click', () => {
+                generateGame('Classic', 9);
+            });
+            document.getElementById('fiveModeBtn').addEventListener('click', () => {
+                generateGame('Five', 25);
+            });
+        }
+
+
+        // Start all
+
+        returnToMainMenu();
+
+    </script>
+    
+</body>
+
+</html>

@@ -1,5 +1,5 @@
 # Tic-tac-toe
-This is a website where you can play classic tic-tac-toe and 5x tic-tac-toe.
+This is a website where you can play classic tic-tac-toe and 5x tic-tac-toe. You can access by searching [krakalaka.github.io/tic-tac-toe/](https://krakalaka.github.io/tic-tac-toe/).
 
 ## How you can play tic-tac-toe
 Tic-tac-toe is played on a 3 by 3 grid. To win you have to connect 3 simbols horizontally, vertically and diagonally. The first to play is usually the X and after the O. It's a turn-based game, which means that one player play first and only after que finishes his turn the second player can play. If all the boxes of the grid are filled and no one has connected 3 of his simbols, then the game is a draw.
